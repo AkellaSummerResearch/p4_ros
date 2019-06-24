@@ -27,13 +27,17 @@ TimeOptimizerClass::TimeOptimizerClass(
     }
 
     // Solve minimum time optimization problem
-    this->SolveMinTimeOpt();
+    bool success = this->SolveMinTimeOpt();
 
     // Retrieve position, velocity and acceleration from optimal solution
-    this->GetTrajectoryPVA(pva_vec, final_time);
+    if (success) {
+        this->GetTrajectoryPVA(pva_vec, final_time);
+    } else {
+        *final_time = -1.0;
+    }
 }
 
-void TimeOptimizerClass::SolveMinTimeOpt() {
+bool TimeOptimizerClass::SolveMinTimeOpt() {
 	// Structure for the time optimizer
 	TrajPolyMono polyTraj(polyCoeff_, polyTime_);
 
@@ -43,25 +47,26 @@ void TimeOptimizerClass::SolveMinTimeOpt() {
     if(time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_)) {   
         ros::Time time_4 = ros::Time::now();
         // _has_traj = true;    
-        ROS_WARN("[TimeOptimizer DEMO] Temporal trajectory generated");
-        cout<<"[TimeOptimizer DEMO] time spent in temporal trajectory is: "<<(time_4 - time_3).toSec()<<endl;
+        ROS_WARN("[p4_services] Temporal trajectory generated");
+        cout<<"[p4_services] time spent in temporal trajectory is: "<<(time_4 - time_3).toSec()<<endl;
         
         // pull out the results in an allocator data structure
         time_allocator_ = time_optimizer.GetTimeAllocation();
 
         final_time_ = 0.0;
-        for(int i = 0; i < time_allocator_->time.rows(); i++)
-        {   
+        for(int i = 0; i < time_allocator_->time.rows(); i++) {   
             int K = time_allocator_->K(i);
             final_time_ += time_allocator_->time(i, K - 1);
         }
 
-        cout<<"[TimeOptimizer DEMO] now start publishing commands"<<endl;
+        // cout<<"[TimeOptimizer DEMO] now start publishing commands"<<endl;
+        return true;
     } else {
-        cout<<"[TimeOptimizer DEMO] temporal optimization fail"<<endl;
-        cout<<"[TimeOptimizer DEMO] possible resons : " << "\n" <<
+        cout<<"[p4_services] temporal optimization fail"<<endl;
+        cout<<"[p4_services] possible reasons : " << "\n" <<
         "1 - please check the spatial trajectory,"     <<  "\n" <<
         "2 - numerical issue of the solver, try setting a larger d_s"<<endl;
+        return false;
     }
 }
 

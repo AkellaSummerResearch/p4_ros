@@ -30,13 +30,13 @@ TimeOptimizerPublisher::TimeOptimizerPublisher(ros::NodeHandle *nh) {
     vis_vel_.type = visualization_msgs::Marker::ARROW;
     vis_vel_.action = visualization_msgs::Marker::ADD;
     vis_vel_.color.a = 1.0; vis_vel_.color.r = 0.0; vis_vel_.color.g = 1.0; vis_vel_.color.b = 0.0;
-    vis_vel_.scale.x = 0.2; vis_vel_.scale.y = 0.4; vis_vel_.scale.z = 0.4;
+    vis_vel_.scale.x = 0.1; vis_vel_.scale.y = 0.2; vis_vel_.scale.z = 0.2;
 
     vis_acc_.ns = "acc";
     vis_acc_.type = visualization_msgs::Marker::ARROW;
     vis_acc_.action = visualization_msgs::Marker::ADD;
     vis_acc_.color.a = 1.0; vis_acc_.color.r = 1.0; vis_acc_.color.g = 1.0; vis_acc_.color.b = 0.0;
-    vis_acc_.scale.x = 0.2; vis_acc_.scale.y = 0.4; vis_acc_.scale.z = 0.4;
+    vis_acc_.scale.x = 0.1; vis_acc_.scale.y = 0.2; vis_acc_.scale.z = 0.2;
 }
 
 void TimeOptimizerPublisher::VisualizePath(const Eigen::MatrixXd &polyCoeff, const Eigen::VectorXd &time) {

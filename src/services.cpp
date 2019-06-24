@@ -61,16 +61,26 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
         d_s, rho, poly_order, req.sampling_freq, coeff_matrix, segment_times,
         req.visualize_output, &res.pva_vec, &res.final_time);
 
-	// visualize the spatial fixed trajectory in rviz
-    time_optimizer_pub_obj.VisualizePath(coeff_matrix, segment_times);
+	if (res.final_time <= 0.0) {
+		ROS_WARN("Time Optimization was not Successful!");
+		for (uint i = 0; i < req.pos_array.size(); i++){
+			std::cout << req.pos_array[i].x << " "
+			          << req.pos_array[i].y << " "
+			          << req.pos_array[i].z << " "
+			          << times_final[i] << std::endl;
+		}
+	} else {
+		// visualize the spatial fixed trajectory in rviz
+    	time_optimizer_pub_obj.VisualizePath(coeff_matrix, segment_times);
 
-    // Publish a "real-time" visualization of the trajectory
-    if (req.visualize_output) {
-    	time_optimizer_pub_obj.plot_results_gnuplot(res.pva_vec);
-		time_optimizer_pub_obj.PubRealTimeTraj(res.pva_vec, req.sampling_freq, res.final_time);
-    }
+	    // Publish a "real-time" visualization of the trajectory
+	    if (req.visualize_output) {
+	    	time_optimizer_pub_obj.plot_results_gnuplot(res.pva_vec);
+			time_optimizer_pub_obj.PubRealTimeTraj(res.pva_vec, req.sampling_freq, res.final_time);
+	    }
+	}
 
-	// p4_helper::plot_results_3d(times, path);
+	// p4_helper::plot_results_3d(times_final, path_optimized);
 	// p4_helper::plot_results_3d(times_final, path_optimized);
 	// p4_helper::plot_results(times_final, path_optimized);
 
