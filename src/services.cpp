@@ -25,9 +25,14 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 	p4::PolynomialSolver::Options solver_options;
 	std::vector<p4::NodeInequalityBound> node_ineq;  // We leave this structure empty in the current service
 
-	// Setup optimization problem
-	p4_helper::setup_min_time_problem(req, &times, &node_eq, &segment_ineq, &solver_options);
+	// First we check whether the trajectory seems to be a straight line
+	// Straight lines are dealt differently than non-straight lines
+	bool is_straight = p4_helper::is_trajectory_straight(req.pos_array);
 
+	// Setup optimization problem
+	p4_helper::setup_min_time_problem(req, is_straight,
+			&times, &node_eq, &segment_ineq, &solver_options);
+	
 	// Solve problem
 	// ros::Time t0 = ros::Time::now();
 	// const p4::PolynomialPath path =
@@ -63,12 +68,13 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 
 	if (res.final_time <= 0.0) {
 		ROS_WARN("Time Optimization was not Successful!");
-		for (uint i = 0; i < req.pos_array.size(); i++){
+		for (uint i = 0; i < req.pos_array.size(); i++) {
 			std::cout << req.pos_array[i].x << " "
 			          << req.pos_array[i].y << " "
 			          << req.pos_array[i].z << " "
 			          << times_final[i] << std::endl;
 		}
+		p4_helper::plot_results(times_final, path_optimized);
 	} else {
 		// visualize the spatial fixed trajectory in rviz
     	time_optimizer_pub_obj.VisualizePath(coeff_matrix, segment_times);

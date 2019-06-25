@@ -195,10 +195,11 @@ void set_max_jerk(const double &max_jerk, const uint &seg_idx,
 }
 
 void setup_min_time_problem(const p4_ros::min_time::Request &req,
-			               std::vector<double> *times,
-						   std::vector<p4::NodeEqualityBound> *node_eq,
-						   std::vector<p4::SegmentInequalityBound> *segment_ineq,
-						   p4::PolynomialSolver::Options *solver_options) {
+							const bool &is_straight,
+			                std::vector<double> *times,
+						    std::vector<p4::NodeEqualityBound> *node_eq,
+						    std::vector<p4::SegmentInequalityBound> *segment_ineq,
+						    p4::PolynomialSolver::Options *solver_options) {
 	const int n_w = req.pos_array.size(); //Number of waypoints
 	const int n_seg = n_w - 1;            //Number of polynomial segments
 
@@ -213,7 +214,8 @@ void setup_min_time_problem(const p4_ros::min_time::Request &req,
 			p4_helper::set_acc_eq_constraint(ros_vector3(0.0, 0.0, 0.0), idx, node_eq);
 		}
 
-		if(idx != 0) {
+		// We don't have to add corridor constraints if the trajectory is straight
+		if((idx != 0) && !is_straight) {
 			set_corridor_constraints(req.pos_array[idx-1], req.pos_array[idx],
 	                          req.corridor_width, idx-1, segment_ineq);
 		}
@@ -223,9 +225,16 @@ void setup_min_time_problem(const p4_ros::min_time::Request &req,
 	solver_options->num_dimensions   = 3;         // 3D
 	solver_options->polynomial_order = 7;         // Fit an 8th-order polynomial
 	solver_options->continuity_order = 4;         // Require continuity through the 4th derivative
-	solver_options->derivative_order = 1;         // Minimize the 2nd derivative (acceleration)
 	solver_options->num_intermediate_points = 10; // Number of points in segment constraints
 	solver_options->polish = false;               // Polish the solution (osqp parameter)
+
+	// Straight trajectories are better-solved with acceleration minimization
+	// Non-straight trajectories are solved with velocity minimization
+	if (is_straight) {
+		solver_options->derivative_order = 1;         // Minimize the 2nd derivative (acceleration)
+	} else {
+		solver_options->derivative_order = 1;         // Minimize the 1st derivative (velocity)
+	}
 }
 
 void setup_min_acc_problem(const p4_ros::minAccXYWpPVA::Request &req,
@@ -264,6 +273,21 @@ void setup_min_acc_problem(const p4_ros::minAccXYWpPVA::Request &req,
 	solver_options->continuity_order = 4;   // Require continuity through the 4th derivative
 	solver_options->derivative_order = 2;   // Minimize the 2nd derivative (acceleration)
 	solver_options->polish = false;         // Polish the solution (osqp parameter)
+}
+
+bool is_trajectory_straight(const std::vector<geometry_msgs::Point> &pts) {
+	const double eps = 0.001;  // Deviation to which we determine the points are not aligned
+	for (uint i = 1; i < pts.size()-1; i++) {
+		Eigen::Vector3d prev_pt(pts[i-1].x, pts[i-1].y, pts[i-1].z);
+		Eigen::Vector3d      pt(  pts[i].x,   pts[i].y,   pts[i].z);
+		Eigen::Vector3d next_pt(pts[i+1].x, pts[i+1].y, pts[i+1].z);
+		linear_algebra::Line_3d line =
+			linear_algebra::lineThroughPoints(prev_pt, next_pt);
+		if (linear_algebra::distancePoint2Line(pt, line) > eps) {
+			return false;
+		}
+	}
+	return true;
 }
 
 p4_ros::PolyPVA segment_pva_coeff_from_path(const p4::PolynomialPath &path,

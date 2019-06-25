@@ -9,6 +9,7 @@
 #include "p4_ros/minAccXYWpPVA.h"
 #include "p4_ros/min_time.h"
 #include "p4_ros/trapezoidal.h"
+#include "p4_ros/geometry_functions.h"
 
 #include "polynomial_solver.h"
 #include "polynomial_sampler.h"
@@ -67,16 +68,20 @@ void set_max_jerk(const double &max_jerk, const uint &seg_idx,
 	              std::vector<p4::SegmentInequalityBound> *ineq_constraints);
 
 void setup_min_time_problem(const p4_ros::min_time::Request &req,
-			               std::vector<double> *times,
-						   std::vector<p4::NodeEqualityBound> *node_eq,
-						   std::vector<p4::SegmentInequalityBound> *segment_ineq,
-						   p4::PolynomialSolver::Options *solver_options);
+							const bool &is_straight,
+			                std::vector<double> *times,
+						    std::vector<p4::NodeEqualityBound> *node_eq,
+						    std::vector<p4::SegmentInequalityBound> *segment_ineq,
+						    p4::PolynomialSolver::Options *solver_options);
 
 void setup_min_acc_problem(const p4_ros::minAccXYWpPVA::Request &req,
 			               std::vector<double> *times,
 						   std::vector<p4::NodeEqualityBound> *node_eq,
 						   std::vector<p4::SegmentInequalityBound> *segment_ineq,
 						   p4::PolynomialSolver::Options *solver_options);
+
+// Returns true if all waypoints are closely aligned
+bool is_trajectory_straight(const std::vector<geometry_msgs::Point> &pts);
 
 Eigen::VectorXd time_to_segment_time(const std::vector<double> &times);
 
