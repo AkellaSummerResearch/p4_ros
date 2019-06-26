@@ -44,7 +44,10 @@ bool TimeOptimizerClass::SolveMinTimeOpt() {
 	// run the time optimizer
 	MinimumTimeOptimizer time_optimizer;
 	ros::Time time_3 = ros::Time::now();
-    if(time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_)) {   
+
+    bool success = time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_); 
+
+    if(success) {
         ros::Time time_4 = ros::Time::now();
         // _has_traj = true;    
         ROS_WARN("[p4_services] Temporal trajectory generated");

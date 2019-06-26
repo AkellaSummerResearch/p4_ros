@@ -15,6 +15,15 @@ std::vector<float> eigen_to_stdvector(const Eigen::VectorXd &eig_vec) {
 	return vec;
 }
 
+std::vector<double> scale_std_vector(const std::vector<double> &vec, 
+	                                 const double factor) {
+	std::vector<double> vec_out;
+	for (uint i = 0; i < vec.size(); i++) {
+		vec_out.push_back(vec[i]*factor);
+	}
+	return vec_out;
+}
+
 geometry_msgs::Point eigen_to_ros_point(const Eigen::Vector3d &eig_vec) {
 	geometry_msgs::Point pt;
 	pt.x = eig_vec[0];
@@ -104,11 +113,15 @@ void set_corridor_constraints(const geometry_msgs::Point &p0, const geometry_msg
 	const Eigen::Vector3d v = (pt1 - pt0).normalized();
 
 	// Get vectors perpendicular to v
-	Eigen::Vector3d perp1, perp2;
+	static const double sqrt2_2 = sqrt(2.0)/2.0;
+	Eigen::Vector3d perp1, perp2, perp3, perp4;
 	p4_helper::get_perpendicular_vectors(v, &perp1, &perp2);
+	// perp3 = sqrt2_2*perp1 + sqrt2_2*perp2;
+	// perp4 = sqrt2_2*perp1 - sqrt2_2*perp2;
 
 	// Set normal vectors for corridor planes
 	Eigen::Vector3d n1 = perp1, n2 = -perp1, n3 = perp2, n4 = -perp2;
+	// Eigen::Vector3d n5 = perp3, n6 = -perp3, n7 = perp4, n8 = -perp4;
 
 	// Get points belonging to the corridor planes
 	Eigen::Vector3d p_mid = 0.5*(pt0 + pt1);  // Point in the middle of the segment
@@ -116,16 +129,28 @@ void set_corridor_constraints(const geometry_msgs::Point &p0, const geometry_msg
 	Eigen::Vector3d pp2 = p_mid - max_dist*n2;
 	Eigen::Vector3d pp3 = p_mid - max_dist*n3;
 	Eigen::Vector3d pp4 = p_mid - max_dist*n4;
+	// Eigen::Vector3d pp5 = p_mid - max_dist*n5;
+	// Eigen::Vector3d pp6 = p_mid - max_dist*n6;
+	// Eigen::Vector3d pp7 = p_mid - max_dist*n7;
+	// Eigen::Vector3d pp8 = p_mid - max_dist*n8;
 
 	// Set containment within corridor
 	p4::SegmentInequalityBound ineq_corridor1(seg_idx, DerivativeIdx::Position, -n1, -pp1.dot(n1));
 	p4::SegmentInequalityBound ineq_corridor2(seg_idx, DerivativeIdx::Position, -n2, -pp2.dot(n2));
 	p4::SegmentInequalityBound ineq_corridor3(seg_idx, DerivativeIdx::Position, -n3, -pp3.dot(n3));
 	p4::SegmentInequalityBound ineq_corridor4(seg_idx, DerivativeIdx::Position, -n4, -pp4.dot(n4));
+	// p4::SegmentInequalityBound ineq_corridor5(seg_idx, DerivativeIdx::Position, -n5, -pp5.dot(n5));
+	// p4::SegmentInequalityBound ineq_corridor6(seg_idx, DerivativeIdx::Position, -n6, -pp6.dot(n6));
+	// p4::SegmentInequalityBound ineq_corridor7(seg_idx, DerivativeIdx::Position, -n7, -pp7.dot(n7));
+	// p4::SegmentInequalityBound ineq_corridor8(seg_idx, DerivativeIdx::Position, -n8, -pp8.dot(n8));
 	ineq_constraints->push_back(ineq_corridor1);
 	ineq_constraints->push_back(ineq_corridor2);
 	ineq_constraints->push_back(ineq_corridor3);
 	ineq_constraints->push_back(ineq_corridor4);
+	// ineq_constraints->push_back(ineq_corridor5);
+	// ineq_constraints->push_back(ineq_corridor6);
+	// ineq_constraints->push_back(ineq_corridor7);
+	// ineq_constraints->push_back(ineq_corridor8);
 }
 
 void set_max_vel(const double &max_vel, const uint &seg_idx,
@@ -225,13 +250,13 @@ void setup_min_time_problem(const p4_ros::min_time::Request &req,
 	solver_options->num_dimensions   = 3;         // 3D
 	solver_options->polynomial_order = 7;         // Fit an 8th-order polynomial
 	solver_options->continuity_order = 4;         // Require continuity through the 4th derivative
-	solver_options->num_intermediate_points = 10; // Number of points in segment constraints
+	solver_options->num_intermediate_points = 5; // Number of points in segment constraints
 	solver_options->polish = false;               // Polish the solution (osqp parameter)
 
 	// Straight trajectories are better-solved with acceleration minimization
 	// Non-straight trajectories are solved with velocity minimization
 	if (is_straight) {
-		solver_options->derivative_order = 1;         // Minimize the 2nd derivative (acceleration)
+		solver_options->derivative_order = 2;         // Minimize the 2nd derivative (acceleration)
 	} else {
 		solver_options->derivative_order = 1;         // Minimize the 1st derivative (velocity)
 	}
@@ -413,10 +438,10 @@ void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
 	*times = segment_time_to_time(segment_times);
 
 	// Get a polished solution
-	p4::PolynomialSolver::Options solver_options_polished = solver_options;
-	solver_options_polished.polish = true;
-	p4::PolynomialSolver solver_polished(solver_options_polished);
-	*path = solver_polished.Run(*times, node_eq, node_ineq, segment_ineq);
+	// p4::PolynomialSolver::Options solver_options_polished = solver_options;
+	// solver_options_polished.polish = false;
+	// p4::PolynomialSolver solver_polished(solver_options_polished);
+	*path = solver.Run(*times, node_eq, node_ineq, segment_ineq);
 }
 
 void tucker_polynomials_to_coeff_matrix(
@@ -527,6 +552,34 @@ void plot_results(const std::vector<double> &times, const p4::PolynomialPath &pa
 	    gp << "plot '-' using 1:2 with lines title 'X-Acceleration'";
 	    gp << ", '-' using 1:2 with lines title 'Y-Acceleration'";
 	    gp << ", '-' using 1:2 with lines title 'Z-Acceleration'";
+	    gp << std::endl;
+	    gp.send1d(boost::make_tuple(t_hist, x_hist));
+	    gp.send1d(boost::make_tuple(t_hist, y_hist));
+	    gp.send1d(boost::make_tuple(t_hist, z_hist));
+	    gp << "set grid" << std::endl;
+	    gp << "replot" << std::endl;
+	}
+
+	{
+		p4::PolynomialSampler::Options sampler_options;
+		sampler_options.frequency        = 100;
+		sampler_options.derivative_order = 3;
+
+		p4::PolynomialSampler sampler(sampler_options);
+		Eigen::MatrixXd samples = sampler.Run(times, path);
+	 	
+	    std::vector<double> t_hist, x_hist, y_hist, z_hist;
+	    for(size_t time_idx = 0; time_idx < samples.cols(); ++time_idx) {
+	      t_hist.push_back(samples(0,time_idx));
+	      x_hist.push_back(samples(1,time_idx));
+	      y_hist.push_back(samples(2,time_idx));
+	      z_hist.push_back(samples(3,time_idx));
+	    }
+
+	    Gnuplot gp;
+	    gp << "plot '-' using 1:2 with lines title 'X-Jerk'";
+	    gp << ", '-' using 1:2 with lines title 'Y-Jerk'";
+	    gp << ", '-' using 1:2 with lines title 'Z-Jerk'";
 	    gp << std::endl;
 	    gp.send1d(boost::make_tuple(t_hist, x_hist));
 	    gp.send1d(boost::make_tuple(t_hist, y_hist));

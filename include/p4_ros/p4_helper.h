@@ -39,6 +39,9 @@ std::vector<float> eigen_to_stdvector(const Eigen::VectorXd &eig_vec);
 
 Eigen::VectorXd stdvector_to_eigen(const std::vector<double> &vec);
 
+std::vector<double> scale_std_vector(const std::vector<double> &vec, 
+	                                 const double factor);
+
 geometry_msgs::Point eigen_to_ros_point(const Eigen::Vector3d &eig_vec);
 
 geometry_msgs::Point ros_point(const double &x, const double &y, const double &z);

@@ -32,7 +32,7 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 	// Setup optimization problem
 	p4_helper::setup_min_time_problem(req, is_straight,
 			&times, &node_eq, &segment_ineq, &solver_options);
-	
+
 	// Solve problem
 	// ros::Time t0 = ros::Time::now();
 	// const p4::PolynomialPath path =
@@ -40,32 +40,53 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 
 	// Find path through gradient descent optimizing segment times
 	ros::Time t1 = ros::Time::now();
-	p4::PolynomialSolver solver(solver_options);
 	p4::PolynomialPath path_optimized;
 	std::vector<double> times_final;
 	p4_helper::solve_optimal_time_problem(times, node_eq, segment_ineq,
 		                                  solver_options, node_ineq,
 		                                  &times_final, &path_optimized);
+
 	ros::Time t2 = ros::Time::now();
 	ROS_WARN("[p4_services] Trajectory generation time: %f", (t2-t1).toSec());
 
-	// Convert segments from Tucker-polynomials (used in P4) into the form expected by the minimum time solver
-	// Defining dt = t_seg_final - t_seg_initial, Tucker polynomials are written as follows:
-	// p(t) = [a0 a1 a2 ... a3]*[1 t/dt t^2/(2! dt^2) t^3/(3! dt^3) ... t^n/(n! dt^n)]
-	Eigen::VectorXd segment_times;
-	Eigen::MatrixXd coeff_matrix;
-	p4_helper::tucker_polynomials_to_coeff_matrix(
-			path_optimized, times_final, &segment_times, &coeff_matrix);
+	// Time optimizer fails sometimes, so we set a maximum number of attempts
+	// For each attempt, we change the initial polynomial final time that we feed to it
+	const uint max_attempts = 3;
 
-	// Run the time optimizer
+	// Time optimizer parameters
 	const uint n_coeff = path_optimized.coefficients[0].col(0).size();
 	const uint poly_order = n_coeff - 1;
-	double d_s = 0.02, rho = 0.0, tf;
+	double d_s = 0.02, rho = 0.0;
+	p4::PolynomialSolver solver(solver_options);
+	Eigen::VectorXd segment_times;
+	Eigen::MatrixXd coeff_matrix;
+	uint n_iterations = 0;
+	while(1) {
+		n_iterations = n_iterations + 1;
 
-	TimeOptimizerClass time_optimizer_obj(req.max_vel, req.max_acc, req.max_jerk,
-        d_s, rho, poly_order, req.sampling_freq, coeff_matrix, segment_times,
-        req.visualize_output, &res.pva_vec, &res.final_time);
+		// Convert segments from Tucker-polynomials (used in P4) into the form expected by the minimum time solver
+		// Defining dt = t_seg_final - t_seg_initial, Tucker polynomials are written as follows:
+		// p(t) = [a0 a1 a2 ... a3]*[1 t/dt t^2/(2! dt^2) t^3/(3! dt^3) ... t^n/(n! dt^n)]
+		p4_helper::tucker_polynomials_to_coeff_matrix(
+				path_optimized, times_final, &segment_times, &coeff_matrix);
 
+		// Call the time optimizer solver
+		TimeOptimizerClass time_optimizer_obj(req.max_vel, req.max_acc, req.max_jerk,
+	        d_s, rho, poly_order, req.sampling_freq, coeff_matrix, segment_times,
+	        req.visualize_output, &res.pva_vec, &res.final_time);
+
+		if ((res.final_time > 0.0) || (n_iterations == max_attempts)) {
+			break;
+		}
+
+		// If the time optimizer fails, we try again with new polynomial changing the segment times
+		times_final = p4_helper::scale_std_vector(times_final, 1.5);
+		solver.Run(times_final, node_eq, node_ineq, segment_ineq);
+		path_optimized = solver.Run(times_final, node_eq, node_ineq, segment_ineq);
+	}
+
+
+	// Test if optimization was successful 
 	if (res.final_time <= 0.0) {
 		ROS_WARN("Time Optimization was not Successful!");
 		for (uint i = 0; i < req.pos_array.size(); i++) {
@@ -75,6 +96,7 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 			          << times_final[i] << std::endl;
 		}
 		p4_helper::plot_results(times_final, path_optimized);
+		res.final_time = -1.0;
 	} else {
 		// visualize the spatial fixed trajectory in rviz
     	time_optimizer_pub_obj.VisualizePath(coeff_matrix, segment_times);
@@ -85,6 +107,8 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 			time_optimizer_pub_obj.PubRealTimeTraj(res.pva_vec, req.sampling_freq, res.final_time);
 	    }
 	}
+
+	// p4_helper::plot_results(times_final, path_optimized);
 
 	// p4_helper::plot_results_3d(times_final, path_optimized);
 	// p4_helper::plot_results_3d(times_final, path_optimized);
