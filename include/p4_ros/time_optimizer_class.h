@@ -10,6 +10,7 @@
 // TimeOptimizer libraries
 #include "traj_poly_mono.h"
 #include "time_optimizer.h"
+#include "time_optimizer_ecos.h"
 
 namespace p4_ros {
 

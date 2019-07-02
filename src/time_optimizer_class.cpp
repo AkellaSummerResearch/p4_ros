@@ -42,7 +42,7 @@ bool TimeOptimizerClass::SolveMinTimeOpt() {
 	TrajPolyMono polyTraj(polyCoeff_, polyTime_);
 
 	// run the time optimizer
-	MinimumTimeOptimizer time_optimizer;
+	ecos_sol::MinimumTimeOptimizer time_optimizer;
 	ros::Time time_3 = ros::Time::now();
 
     bool success = time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_); 
