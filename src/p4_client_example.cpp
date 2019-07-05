@@ -20,19 +20,19 @@ int main(int argc, char **argv)
     p4_ros::min_time req;
 
     // Simple takeoff
-    req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 0.0));
-    req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 0.75));
-    req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.5));
+    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 0.0));
+    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 0.75));
+    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.5));
 
     // Scan Example
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, -0.3, -0.7));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -0.7));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -0.7));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -0.7));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -1.4));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -1.4));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -1.4));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 0.2, -1.4));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, -0.3, -0.7));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -0.7));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -0.7));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -0.7));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -1.4));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -1.4));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -1.4));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 0.2, -1.4));
 
     // // Scan example 2
     // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.0));
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     req.request.max_jerk = 0.3;
     req.request.visualize_output = false;
 
-    for (uint i = 0; i < 1000; i++) {
+    for (uint i = 0; i < 1; i++) {
         ros::Time t0 = ros::Time::now();
         ROS_INFO("[p4_services] Calling service %s!", client.getService().c_str());
         std::cout << "attempt " << i << std::endl;
