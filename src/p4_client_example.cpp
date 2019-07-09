@@ -20,36 +20,36 @@ int main(int argc, char **argv)
     p4_ros::min_time req;
 
     // Simple takeoff
-    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 0.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 0.75));
-    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.5));
+    // req.request.pos_array.push_back(p4_helper::ros_point(0.0,  0.0, 0.0));
+    // req.request.pos_array.push_back(p4_helper::ros_point(0.25, 0.1, 0.75));
+    // req.request.pos_array.push_back(p4_helper::ros_point(0.50, 0.2, 1.5));
 
     // Scan Example
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, -0.3, -0.7));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -0.7));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -0.7));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -0.7));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -1.4));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -1.4));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -1.4));
-    req.request.pos_array.push_back(p4_helper::ros_point(1.4, 0.2, -1.4));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, -0.3, -0.7));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -0.7));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -0.7));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -0.7));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 6.2, -1.4));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 4, -1.4));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 2, -1.4));
+    // req.request.pos_array.push_back(p4_helper::ros_point(1.4, 0.2, -1.4));
 
     // // Scan example 2
-    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.0, 0.0, 1.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(2.0, 0.0, 1.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(3.0, 0.0, 1.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(4.0, 0.0, 1.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(4.0, 0.0, 1.5));
-    // req.request.pos_array.push_back(p4_helper::ros_point(3.0, 0.0, 1.5));
-    // req.request.pos_array.push_back(p4_helper::ros_point(2.0, 0.0, 1.5));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.0, 0.0, 1.5));
-    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.5));
-    // req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 2.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(1.0, 0.0, 2.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(2.0, 0.0, 2.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(3.0, 0.0, 2.0));
-    // req.request.pos_array.push_back(p4_helper::ros_point(4.0, 0.0, 2.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.0, 0.0, 1.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(2.0, 0.0, 1.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(3.0, 0.0, 1.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(4.0, 0.0, 1.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(4.0, 0.0, 1.5));
+    req.request.pos_array.push_back(p4_helper::ros_point(3.0, 0.0, 1.5));
+    req.request.pos_array.push_back(p4_helper::ros_point(2.0, 0.0, 1.5));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.0, 0.0, 1.5));
+    req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 1.5));
+    req.request.pos_array.push_back(p4_helper::ros_point(0.0, 0.0, 2.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(1.0, 0.0, 2.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(2.0, 0.0, 2.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(3.0, 0.0, 2.0));
+    req.request.pos_array.push_back(p4_helper::ros_point(4.0, 0.0, 2.0));
 
     req.request.sampling_freq = 30;
     req.request.corridor_width = 0.1;

@@ -55,12 +55,15 @@ include_directories(
   P4/examples
   TimeOptimizer/time_optimizer/src
   TimeOptimizer/time_optimizer/third_party/include
+  TimeOptimizer/time_optimizer/third_party/include/ecos
+  TimeOptimizer/time_optimizer/third_party/include/suitesparse
   ${Boost_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
-link_directories( ${PROJECT_SOURCE_DIR}/TimeOptimizer/time_optimizer/third_party/lib/mosek8_1 )
+link_directories( ${PROJECT_SOURCE_DIR}/TimeOptimizer/time_optimizer/third_party/lib/mosek8_1 
+                  ${PROJECT_SOURCE_DIR}/TimeOptimizer/time_optimizer/third_party/lib/ecos)
 
 
 add_executable(p4_services src/p4_services_node.cpp
@@ -77,7 +80,8 @@ add_executable(p4_services src/p4_services_node.cpp
                            P4/src/polynomial_sampler.cc)
 add_dependencies(p4_services ${catkin_EXPORTED_TARGETS})
 add_dependencies(p4_services p4_ros_generate_messages_cpp)
-target_link_libraries(p4_services ${catkin_LIBRARIES} ${Boost_LIBRARIES} osqp::osqp mosek64)
+target_link_libraries(p4_services ${catkin_LIBRARIES} ${Boost_LIBRARIES} 
+                      osqp::osqp mosek64 libldl.a libecos.a)
 
 add_executable(p4_client src/p4_client_example.cpp
                            src/p4_helper.cpp

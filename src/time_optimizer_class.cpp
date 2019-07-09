@@ -27,7 +27,8 @@ TimeOptimizerClass::TimeOptimizerClass(
     }
 
     // Solve minimum time optimization problem
-    bool success = this->SolveMinTimeOpt();
+    // bool success = this->SolveMinTimeOpt("mosek");
+    bool success = this->SolveMinTimeOpt("ecos");
 
     // Retrieve position, velocity and acceleration from optimal solution
     if (success) {
@@ -37,30 +38,35 @@ TimeOptimizerClass::TimeOptimizerClass(
     }
 }
 
-bool TimeOptimizerClass::SolveMinTimeOpt() {
+bool TimeOptimizerClass::SolveMinTimeOpt(const std::string &solver) {
 	// Structure for the time optimizer
 	TrajPolyMono polyTraj(polyCoeff_, polyTime_);
 
 	// run the time optimizer
-	ecos_sol::MinimumTimeOptimizer time_optimizer;
-	ros::Time time_3 = ros::Time::now();
-
-    bool success = time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_); 
+    ros::Time time_3 = ros::Time::now();
+    bool success;
+    if (solver == "mosek") {
+        MinimumTimeOptimizer time_optimizer;
+        success = time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_);
+        time_allocator_ = time_optimizer.GetTimeAllocation();
+    } else {
+        ecos_sol::MinimumTimeOptimizer time_optimizer;
+        success = time_optimizer.MinimumTimeGeneration( polyTraj, max_vel_, max_acc_, max_jerk_, d_s_, rho_);
+        time_allocator_ = time_optimizer.GetTimeAllocation();
+    }
+    ros::Time time_4 = ros::Time::now();
 
     if(success) {
-        ros::Time time_4 = ros::Time::now();
         // _has_traj = true;    
         ROS_WARN("[p4_services] Temporal trajectory generated");
         cout<<"[p4_services] time spent in temporal trajectory is: "<<(time_4 - time_3).toSec()<<endl;
-        
-        // pull out the results in an allocator data structure
-        time_allocator_ = time_optimizer.GetTimeAllocation();
 
         final_time_ = 0.0;
         for(int i = 0; i < time_allocator_->time.rows(); i++) {   
             int K = time_allocator_->K(i);
             final_time_ += time_allocator_->time(i, K - 1);
         }
+        std::cout << "Final time: " << final_time_ << std::endl;
 
         // cout<<"[TimeOptimizer DEMO] now start publishing commands"<<endl;
         return true;

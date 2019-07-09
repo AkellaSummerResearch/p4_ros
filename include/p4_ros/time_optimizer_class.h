@@ -38,7 +38,7 @@ class TimeOptimizerClass {
 		               const Eigen::VectorXd &polyTime, const bool &visualize_output,
 	                   std::vector<p4_ros::PVA> *pva_vec, float *final_time);
 
-	bool SolveMinTimeOpt();
+	bool SolveMinTimeOpt(const std::string &solver);
 	void GetTrajectoryPVA(std::vector<p4_ros::PVA> *pva_vec, float *final_time);
     Eigen::Vector3d getPosPoly(const Eigen::MatrixXd &polyCoeff, 
     	                       const int &k, const double &t);

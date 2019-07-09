@@ -100,6 +100,7 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 	} else {
 		// visualize the spatial fixed trajectory in rviz
     	time_optimizer_pub_obj.VisualizePath(coeff_matrix, segment_times);
+    	time_optimizer_pub_obj.plot_results_gnuplot(res.pva_vec);
 
 	    // Publish a "real-time" visualization of the trajectory
 	    if (req.visualize_output) {
@@ -114,9 +115,9 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 	// p4_helper::plot_results_3d(times_final, path_optimized);
 	// p4_helper::plot_results(times_final, path_optimized);
 
-	// std::cout << "Initial times: " << std::endl;
-	// for (uint i = 0; i < times.size(); i++) {
-	// 	std::cout << times[i] << "\t";
+	// std::cout << "Segment times: " << std::endl;
+	// for (uint i = 0; i < segment_times.size(); i++) {
+	// 	std::cout << segment_times[i] << "\t";
 	// }
 	// std::cout << std::endl;
 
