@@ -35,6 +35,9 @@ static constexpr int Pop = 6;
 
 size_t factorial(size_t n);
 
+double saturate(const double &value, const double &min_val,
+	            const double &max_val);
+
 std::vector<float> eigen_to_stdvector(const Eigen::VectorXd &eig_vec);
 
 Eigen::VectorXd stdvector_to_eigen(const std::vector<double> &vec);

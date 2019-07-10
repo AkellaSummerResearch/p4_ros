@@ -21,6 +21,11 @@ class TimeOptimizerClass {
 	double max_vel_, max_acc_, max_jerk_, d_s_, rho_;
 	uint poly_num_coeff_, num_segments_;
 
+	// The variables below would not be necessary, but sometimes GetPVAatTime
+	// returns samples that are wierdly high at segment transitions,
+	// so we cap them using the variables below
+	double max_vel_sample_, max_acc_sample_;
+
     // Trajectory to optimize on
     Eigen::MatrixXd polyCoeff_;
     Eigen::VectorXd polyTime_;

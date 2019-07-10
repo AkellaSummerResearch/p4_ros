@@ -100,7 +100,7 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 	} else {
 		// visualize the spatial fixed trajectory in rviz
     	time_optimizer_pub_obj.VisualizePath(coeff_matrix, segment_times);
-    	time_optimizer_pub_obj.plot_results_gnuplot(res.pva_vec);
+    	// time_optimizer_pub_obj.plot_results_gnuplot(res.pva_vec);
 
 	    // Publish a "real-time" visualization of the trajectory
 	    if (req.visualize_output) {

@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     req.request.max_jerk = 0.3;
     req.request.visualize_output = false;
 
-    for (uint i = 0; i < 1; i++) {
+    for (uint i = 0; i < 500; i++) {
         ros::Time t0 = ros::Time::now();
         ROS_INFO("[p4_services] Calling service %s!", client.getService().c_str());
         std::cout << "attempt " << i << std::endl;

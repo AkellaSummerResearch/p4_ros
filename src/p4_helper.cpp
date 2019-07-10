@@ -7,6 +7,11 @@ size_t factorial(size_t n) {
   return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
 }
 
+double saturate(const double &value, const double &min_val,
+	            const double &max_val) {
+	return std::max(std::min(value, max_val), min_val);
+}
+
 std::vector<float> eigen_to_stdvector(const Eigen::VectorXd &eig_vec) {
 	std::vector<float> vec;
 	for (uint i = 0; i < eig_vec.size(); i++) {

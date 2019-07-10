@@ -14,6 +14,8 @@ TimeOptimizerClass::TimeOptimizerClass(
 	max_vel_ = max_vel;
 	max_acc_ = max_acc;
 	max_jerk_ = max_jerk;
+    max_vel_sample_ = 1.25*max_vel_;
+    max_acc_sample_ = 1.25*max_acc_;
 	d_s_ = d_s;
 	rho_ = rho;
 	poly_num_coeff_ = poly_order + 1;
@@ -367,12 +369,12 @@ void TimeOptimizerClass::GetPVAatTime(
     pos->x = position(0);
     pos->y = position(1);
     pos->z = position(2);
-    vel->x = velocity(0);
-    vel->y = velocity(1);
-    vel->z = velocity(2);
-    acc->x = acceleration(0);
-    acc->y = acceleration(1);
-    acc->z = acceleration(2);
+    vel->x = p4_helper::saturate(velocity(0), -max_vel_sample_, max_vel_sample_);
+    vel->y = p4_helper::saturate(velocity(1), -max_vel_sample_, max_vel_sample_);
+    vel->z = p4_helper::saturate(velocity(2), -max_vel_sample_, max_vel_sample_);
+    acc->x = p4_helper::saturate(acceleration(0), -max_acc_sample_, max_acc_sample_);
+    acc->y = p4_helper::saturate(acceleration(1), -max_acc_sample_, max_acc_sample_);
+    acc->z = p4_helper::saturate(acceleration(2), -max_acc_sample_, max_acc_sample_);
 }
 
 }  // namespace p4_ros
