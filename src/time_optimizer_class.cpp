@@ -243,9 +243,8 @@ void TimeOptimizerClass::GetPVAatTime(
     Vector3d acceleration;
 
     double a_k;
-    // # special case 1: the very first grid of all segments of the trajectory, do interpolation in one grid
-    if( grid_idx == 0 && idx == 0 ) 
-    {   
+    if( grid_idx == 0 && idx == 0 ) {   
+        // # special case 1: the very first grid of all segments of the trajectory, do interpolation in one grid
         s_k   = time_allocator_->s(idx, 0);
         s_k_1 = time_allocator_->s(idx, 0 + 1);
         
@@ -259,10 +258,8 @@ void TimeOptimizerClass::GetPVAatTime(
         acceleration1 << 0.0, 0.0, 0.0;
         
         acceleration   = acceleration1 + (acceleration2 - acceleration1) * t / time_acc(0, 0); 
-    }
-    // # special case 2: the very last grid of all segments of the trajectory, do interpolation in one grid
-    else if( grid_idx == grid_num && idx == (num_segments_ - 1) )
-    {   
+    } else if( grid_idx == grid_num && idx == (num_segments_ - 1) ) {
+        // # special case 2: the very last grid of all segments of the trajectory, do interpolation in one grid
         s_k   = time_allocator_->s(idx, grid_num - 1);
         s_k_1 = time_allocator_->s(idx, grid_num);
         
@@ -273,13 +270,14 @@ void TimeOptimizerClass::GetPVAatTime(
         velocity_s     = getVelPoly(polyCoeff_, idx, (s_k + s_k_1 ) / 2.0);
         acceleration_s = getAccPoly(polyCoeff_, idx, (s_k + s_k_1 ) / 2.0);
         acceleration = velocity_s * a_k + acceleration_s * (b_k + b_k_1) / 2.0;
-    }
-    // # regular case: do interpolation between two grids
-    else 
-    {   
+    } else if(idx >= num_segments_) {
+        velocity = Eigen::Vector3d(0.0, 0.0, 0.0);
+        acceleration = Eigen::Vector3d(0.0, 0.0, 0.0);
+    } else  {
+        // # regular case: do interpolation between two grids   
         // sub-case 1: two grids are in the same segment
-        if(grid_idx < grid_num && grid_idx > 0) // take average accleration in a same segment
-        {   
+        if(grid_idx < grid_num && grid_idx > 0) {
+            // take average accleration in a same segment
             delta_t = (time_acc(idx, grid_idx) - time_acc(idx, grid_idx - 1));
             
             s_k   = time_allocator_->s(idx, grid_idx - 1);
@@ -304,10 +302,9 @@ void TimeOptimizerClass::GetPVAatTime(
             acceleration_s = getAccPoly(polyCoeff_, idx, (s_k + s_k_1 ) / 2.0);
             acceleration2 = velocity_s * a_k + acceleration_s * (b_k + b_k_1) / 2.0;
             acceleration   = acceleration1 + (acceleration2 - acceleration1) * t / delta_t;   
-        }
-        // sub-case 2: two grids are in consecutive segment, the current grid is in a segment's tail
-        else if(grid_idx == grid_num)// take average accleration between two segments
-        {   
+        } else if(grid_idx == grid_num) {
+            // sub-case 2: two grids are in consecutive segment, the current grid is in a segment's tail
+            // take average accleration between two segments
             delta_t = (time(idx, grid_num - 1) - time_acc(idx, grid_num - 1) + time_acc(idx + 1, 0) );
             
             s_k   = time_allocator_->s(idx, grid_idx - 1);
@@ -331,10 +328,9 @@ void TimeOptimizerClass::GetPVAatTime(
             acceleration_s = getAccPoly(polyCoeff_, idx + 1, (s_k + s_k_1 ) / 2.0);
             acceleration2 = velocity_s * a_k + acceleration_s * (b_k + b_k_1) / 2.0;
             acceleration  = acceleration1 + (acceleration2 - acceleration1) * t / delta_t;        
-        }
-        // sub-case 3: two grids are in consecutive segment, the current grid is in a segment's head
-        else if(grid_idx == 0)// take average accleration between two segments
-        {   
+        } else if(grid_idx == 0) {
+            // sub-case 3: two grids are in consecutive segment, the current grid is in a segment's head
+            // take average accleration between two segments
             int grid_num_k = time_allocator_->K(idx - 1);
             delta_t = (time(idx - 1, grid_num_k - 1) - time_acc(idx - 1, grid_num_k - 1) + time_acc(idx, 0) );
             
@@ -360,11 +356,27 @@ void TimeOptimizerClass::GetPVAatTime(
             acceleration_s = getAccPoly(polyCoeff_, idx, (s_k + s_k_1 ) / 2.0);
             acceleration2  = velocity_s * a_k + acceleration_s * (b_k + b_k_1) / 2.0;
             acceleration   = acceleration1 + (acceleration2 - acceleration1) * (t + time(idx - 1, grid_num_k - 1) - time_acc(idx - 1, grid_num_k - 1)) / delta_t;   
-        } 
-        else {
+        } else {
             // no else
+            ROS_WARN("I got here!!");
         }
     }
+
+    // if ((std::fabs(acceleration(0)) > max_acc_sample_) || (std::fabs(acceleration(1)) > max_acc_sample_) ||
+    //     (std::fabs(acceleration(2)) > max_acc_sample_)) {
+    //     ROS_WARN("Something weird has happened...");
+    //     std::cout << "time_in: " << time_in << std::endl;
+    //     std::cout << "grid_idx: " << grid_idx << std::endl;
+    //     std::cout << "grid_num: " << grid_idx << std::endl;
+    //     std::cout << "num_segments_: " << num_segments_ << std::endl;
+    //     std::cout << "idx: " << idx << std::endl;
+    //     std::cout << "s_k: " << s_k << std::endl;
+    //     std::cout << "s_k_1: " << s_k_1 << std::endl;
+    //     std::cout << "a_k: " << a_k << std::endl;
+    //     std::cout << "b_k: " << b_k << std::endl;
+    //     std::cout << "b_k_1: " << b_k_1 << std::endl;
+    //     // cin.get();
+    // }
 
     pos->x = position(0);
     pos->y = position(1);
