@@ -35,6 +35,8 @@ cd osqp
 git submodule update --init --recursive
 mkdir build
 cd build
+cmake -G "Unix Makefiles" ..
+cmake --build .
 ```
 
 - TimeOptimizer dependencies:
