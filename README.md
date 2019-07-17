@@ -41,11 +41,26 @@ cd build
 
 1) Get a Mosek license. Follow the instructions in [here](https://www.mosek.com/products/academic-licenses/) if you want an academic license.
 
+2) Make ECOS
+
+```
+git clone https://github.com/marcelino-pensa/ecos.git
+cd ecos
+make
+```
+
+ECOS will produce two static library files that you will need subsequently: ```libecos.a``` and ```external/ldl/libldl.a```.
+
 - Install p4_ros:
 
 ```
 cd ~/catkin_ws/src
 git clone --recursive https://github.com/AkellaSummerResearch/p4_ros.git
+```
+
+Copy ```libecos.a``` and ```external/ldl/libldl.a``` into the folder ```~/catkin_ws/src/p4_ros/TimeOptimizer/time_optimizer/third_party/lib/ecos```.
+
+```
 cd ~/catkin_ws
 catkin_make
 ```
