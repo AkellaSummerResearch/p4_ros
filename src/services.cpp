@@ -136,7 +136,7 @@ bool ServicesClass::minAccXYService(p4_ros::minAccXYWpPVA::Request  &req,
 
 	// Problem variables
 	std::vector<double> times;
-	std::vector<p4::NodeEqualityBound> node_eq;
+	std::vector<p4::NodeEqualityBound> node_eq; 
 	std::vector<p4::SegmentInequalityBound> segment_ineq;
 	p4::PolynomialSolver::Options solver_options;
 	std::vector<p4::NodeInequalityBound> node_ineq;  // We leave this structure empty in the current service
