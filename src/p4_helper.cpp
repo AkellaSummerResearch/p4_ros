@@ -258,9 +258,10 @@ void setup_min_time_problem(const p4_ros::min_time::Request &req,
 	solver_options->num_intermediate_points = 5;      // Number of points in segment constraints
 
 	// OSQP-related settings
-	// osqp_set_default_settings(&(solver_options->osqp_settings));
+	osqp_set_default_settings(&(solver_options->osqp_settings));
 	solver_options->osqp_settings.polish = false;     // Polish the solution (osqp parameter)
-	solver_options->osqp_settings.warm_start = false; // Do not warm-start the solution
+	solver_options->osqp_settings.warm_start = true;  // Warm-start the solution
+	solver_options->osqp_settings.verbose = false;    // Do not print intermediate verbose
 
 	// Straight trajectories are better-solved with acceleration minimization
 	// Non-straight trajectories are solved with velocity minimization
@@ -311,6 +312,7 @@ void setup_min_acc_problem(const p4_ros::minAccXYWpPVA::Request &req,
 	osqp_set_default_settings(&(solver_options->osqp_settings));
 	solver_options->osqp_settings.polish = false; // Polish the solution (osqp parameter)
 	solver_options->osqp_settings.warm_start = false; // Do not warm-start the solution
+	solver_options->osqp_settings.verbose = false;    // Do not print intermediate verbose
 }
 
 bool is_trajectory_straight(const std::vector<geometry_msgs::Point> &pts) {
@@ -362,13 +364,13 @@ std::vector<double> segment_time_to_time(const Eigen::VectorXd &segment_times) {
 	return times;
 }
 
-void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
-	                            const std::vector<p4::NodeEqualityBound> &node_eq,
-								const std::vector<p4::SegmentInequalityBound> &segment_ineq,
-								const p4::PolynomialSolver::Options &solver_options,
-								const std::vector<p4::NodeInequalityBound> &node_ineq,
-								std::vector<double> *times,
-								p4::PolynomialPath *path) {
+void solve_initial_min_time_trajectory(const std::vector<double> &init_time_guess,
+			                           const std::vector<p4::NodeEqualityBound> &node_eq,
+									   const std::vector<p4::SegmentInequalityBound> &segment_ineq,
+									   const p4::PolynomialSolver::Options &solver_options,
+									   const std::vector<p4::NodeInequalityBound> &node_ineq,
+									   std::vector<double> *times,
+									   p4::PolynomialPath *path) {
 	// Variable declaration
 	const uint n_w = init_time_guess.size();  // Number of waypoints
 	Eigen::VectorXd segment_times = time_to_segment_time(init_time_guess);

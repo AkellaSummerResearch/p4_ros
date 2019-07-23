@@ -42,9 +42,9 @@ bool ServicesClass::minTimeService(p4_ros::min_time::Request  &req,
 	ros::Time t1 = ros::Time::now();
 	p4::PolynomialPath path_optimized;
 	std::vector<double> times_final;
-	p4_helper::solve_optimal_time_problem(times, node_eq, segment_ineq,
-		                                  solver_options, node_ineq,
-		                                  &times_final, &path_optimized);
+	p4_helper::solve_initial_min_time_trajectory(
+		times, node_eq, segment_ineq, solver_options,
+		node_ineq, &times_final, &path_optimized);
 
 	ros::Time t2 = ros::Time::now();
 	ROS_WARN("[p4_services] Trajectory generation time: %f", (t2-t1).toSec());
