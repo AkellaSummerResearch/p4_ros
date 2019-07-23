@@ -252,11 +252,16 @@ void setup_min_time_problem(const p4_ros::min_time::Request &req,
 	}
 
 	// Configure solver options
-	solver_options->num_dimensions   = 3;         // 3D
-	solver_options->polynomial_order = 7;         // Fit an 8th-order polynomial
-	solver_options->continuity_order = 4;         // Require continuity through the 4th derivative
-	solver_options->num_intermediate_points = 5; // Number of points in segment constraints
-	solver_options->polish = false;               // Polish the solution (osqp parameter)
+	solver_options->num_dimensions   = 3;             // 3D
+	solver_options->polynomial_order = 7;             // Fit an 8th-order polynomial
+	solver_options->continuity_order = 4;             // Require continuity through the 4th derivative
+	solver_options->num_intermediate_points = 5;      // Number of points in segment constraints
+
+	// OSQP-related settings
+	osqp_set_default_settings(&(solver_options->osqp_settings));
+	solver_options->osqp_settings.polish = false;     // Polish the solution (osqp parameter)
+	solver_options->osqp_settings.warm_start = true;  // Warm-start the solution
+	solver_options->osqp_settings.verbose = false;    // Do not print intermediate verbose
 
 	// Straight trajectories are better-solved with acceleration minimization
 	// Non-straight trajectories are solved with velocity minimization
@@ -298,11 +303,16 @@ void setup_min_acc_problem(const p4_ros::minAccXYWpPVA::Request &req,
 	}
 
 	// Configure solver options
-	solver_options->num_dimensions   = 3;   // 3D
-	solver_options->polynomial_order = 8;   // Fit an 8th-order polynomial
-	solver_options->continuity_order = 4;   // Require continuity through the 4th derivative
-	solver_options->derivative_order = 2;   // Minimize the 2nd derivative (acceleration)
-	solver_options->polish = false;         // Polish the solution (osqp parameter)
+	solver_options->num_dimensions   = 3;         // 3D
+	solver_options->polynomial_order = 8;         // Fit an 8th-order polynomial
+	solver_options->continuity_order = 4;         // Require continuity through the 4th derivative
+	solver_options->derivative_order = 2;         // Minimize the 2nd derivative (acceleration)
+	
+	// OSQP-related settings
+	osqp_set_default_settings(&(solver_options->osqp_settings));
+	solver_options->osqp_settings.polish = false; // Polish the solution (osqp parameter)
+	solver_options->osqp_settings.warm_start = false; // Do not warm-start the solution
+	solver_options->osqp_settings.verbose = false;    // Do not print intermediate verbose
 }
 
 bool is_trajectory_straight(const std::vector<geometry_msgs::Point> &pts) {
@@ -354,13 +364,13 @@ std::vector<double> segment_time_to_time(const Eigen::VectorXd &segment_times) {
 	return times;
 }
 
-void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
-	                            const std::vector<p4::NodeEqualityBound> &node_eq,
-								const std::vector<p4::SegmentInequalityBound> &segment_ineq,
-								const p4::PolynomialSolver::Options &solver_options,
-								const std::vector<p4::NodeInequalityBound> &node_ineq,
-								std::vector<double> *times,
-								p4::PolynomialPath *path) {
+void solve_initial_min_time_trajectory(const std::vector<double> &init_time_guess,
+			                           const std::vector<p4::NodeEqualityBound> &node_eq,
+									   const std::vector<p4::SegmentInequalityBound> &segment_ineq,
+									   const p4::PolynomialSolver::Options &solver_options,
+									   const std::vector<p4::NodeInequalityBound> &node_ineq,
+									   std::vector<double> *times,
+									   p4::PolynomialPath *path) {
 	// Variable declaration
 	const uint n_w = init_time_guess.size();  // Number of waypoints
 	Eigen::VectorXd segment_times = time_to_segment_time(init_time_guess);
@@ -371,7 +381,7 @@ void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
 	p4::PolynomialSolver solver(solver_options);
 	ROS_WARN("Get first solution!");
 	cur_trajectory = solver.Run(init_time_guess, node_eq, node_ineq, segment_ineq);
-	cost = cur_trajectory.optimal_cost;
+	cost = cur_trajectory.osqp_info.obj_val;
 
 	//Declare variables for gradient descent
 	const double final_time = init_time_guess.back();
@@ -397,7 +407,7 @@ void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
 			g_i[i] = 1;
 			segment_times_new = segment_times + h*g_i;
 			cur_trajectory = solver.Run(segment_time_to_time(segment_times_new), node_eq, node_ineq, segment_ineq);
-			costNew = cur_trajectory.optimal_cost;
+			costNew = cur_trajectory.osqp_info.obj_val;
 			gradF(i) = (costNew - cost)/h;
 		}
 
@@ -417,7 +427,7 @@ void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
 			segment_times_new = final_time*segment_times_new/segment_times_new.sum();
 
 			cur_trajectory = solver.Run(segment_time_to_time(segment_times_new), node_eq, node_ineq, segment_ineq);
-			curCost = cur_trajectory.optimal_cost;
+			curCost = cur_trajectory.osqp_info.obj_val;
 
 			if(curCost < bestCost){
 				bestCost = curCost;

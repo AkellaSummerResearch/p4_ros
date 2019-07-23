@@ -93,13 +93,13 @@ Eigen::VectorXd time_to_segment_time(const std::vector<double> &times);
 
 std::vector<double> segment_time_to_time(const Eigen::VectorXd &segment_times);
 
-void solve_optimal_time_problem(const std::vector<double> &init_time_guess,
-	                            const std::vector<p4::NodeEqualityBound> &node_eq,
-								const std::vector<p4::SegmentInequalityBound> &segment_ineq,
-								const p4::PolynomialSolver::Options &solver_options,
-								const std::vector<p4::NodeInequalityBound> &node_ineq,
-								std::vector<double> *times,
-								p4::PolynomialPath *path);
+void solve_initial_min_time_trajectory(const std::vector<double> &init_time_guess,
+	                            	   const std::vector<p4::NodeEqualityBound> &node_eq,
+									   const std::vector<p4::SegmentInequalityBound> &segment_ineq,
+									   const p4::PolynomialSolver::Options &solver_options,
+									   const std::vector<p4::NodeInequalityBound> &node_ineq,
+									   std::vector<double> *times,
+									   p4::PolynomialPath *path);
 
 p4_ros::PolyPVA segment_pva_coeff_from_path(const p4::PolynomialPath &path,
 	                                        const std::vector<double> &times,

@@ -79,3 +79,11 @@ In the second terminal, run the client example (see src/p4_client_example.cpp if
 ```
 rosrun p4_ros p4_client
 ```
+
+## ECOS and SOCP Documentation
+
+http://176.10.116.53/ECOS/How-to-use/C-API#ECOS_C_API_Using_ECOS
+https://laurentlessard.com/teaching/cs524/slides/13%20-%20cones%20and%20semidefinite%20constraints.pdf
+https://docs.mosek.com/modeling-cookbook/cqo.html#rotated-quadratic-cones
+https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture6.pdf
+https://r-forge.r-project.org/scm/viewvc.php/*checkout*/pkg/Rsocp/inst/doc/socp.pdf?root=rmetrics
