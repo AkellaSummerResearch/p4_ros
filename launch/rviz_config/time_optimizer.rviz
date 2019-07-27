@@ -100,6 +100,14 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /p4_services/desired_yaw
+      Name: Yaw
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /px4_control_node/local_setpoint_mesh
@@ -185,10 +193,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.469795763
+      Pitch: 0.459795773
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.600384
+      Yaw: 2.57038331
     Saved:
       - Class: rviz/Orbit
         Distance: 79.2448425

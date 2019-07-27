@@ -45,12 +45,36 @@ geometry_msgs::Point ros_point(const double &x, const double &y, const double &z
 	return pt;
 }
 
+geometry_msgs::Vector3 eigen_to_ros_vector(const Eigen::Vector3d &eig_vec) {
+	geometry_msgs::Vector3 vec;
+	vec.x = eig_vec[0];
+	vec.y = eig_vec[1];
+	vec.z = eig_vec[2];
+	return vec;
+}
+
 geometry_msgs::Vector3 ros_vector3(const double &x, const double &y, const double &z) {
 	geometry_msgs::Vector3 vec;
 	vec.x = x;
 	vec.y = y;
 	vec.z = z;
 	return vec;
+}
+
+p4_ros::PVA_4d constuct_PVA (const Eigen::Vector3d &pos,
+	                         const Eigen::Vector3d &vel,
+	                         const Eigen::Vector3d &acc,
+	                         const double &yaw, const double &yaw_vel,
+	                         const double &yaw_acc, const double &time) {
+	p4_ros::PVA_4d pva;
+	pva.pos = p4_helper::eigen_to_ros_point(pos);
+	pva.vel = p4_helper::eigen_to_ros_vector(vel);
+	pva.acc = p4_helper::eigen_to_ros_vector(acc);
+	pva.yaw = yaw;
+	pva.yaw_vel = yaw_vel;
+	pva.yaw_acc = yaw_acc;
+	pva.time = time;
+	return pva;
 }
 
 std::vector<float> diff_coeff(const std::vector<float> &coeff_in) {
@@ -397,7 +421,7 @@ void solve_initial_min_time_trajectory(const std::vector<double> &init_time_gues
 	// *path = cur_trajectory;
 
 	//Gradient descent loop
-	while(step > epsilon){
+	while(step > epsilon) {
 
 		//Calculate gradient
 		Eigen::VectorXd g_i = g;
@@ -411,7 +435,7 @@ void solve_initial_min_time_trajectory(const std::vector<double> &init_time_gues
 			gradF(i) = (costNew - cost)/h;
 		}
 
-		//Normalize gradient vector (its bigger value will be as big as the bigger segment time)
+		//Normalize gradient vector (its biggest value will be as big as the biggest segment time)
 		gradF = segment_times_new.cwiseAbs().minCoeff()*gradF/gradF.cwiseAbs().maxCoeff();
 
 		//Perform gradient descent

@@ -3,10 +3,11 @@
 
 namespace visualization {
 
-TimeOptimizerPublisher::TimeOptimizerPublisher() { }
+TrajPublisher::TrajPublisher() { }
 
-TimeOptimizerPublisher::TimeOptimizerPublisher(ros::NodeHandle *nh) {
-    vis_traj_width_ = 0.15;
+TrajPublisher::TrajPublisher(ros::NodeHandle *nh) {
+    vis_traj_width_ = 0.10;
+    yaw_vec_length_ = 0.5;
 
     // Declare trajectory publishers
     wp_traj_vis_pub_ = nh->advertise<visualization_msgs::Marker>("spatial_trajectory", 1);
@@ -14,53 +15,52 @@ TimeOptimizerPublisher::TimeOptimizerPublisher(ros::NodeHandle *nh) {
     vis_pos_pub_     = nh->advertise<visualization_msgs::Marker>("desired_position", 1);    
     vis_vel_pub_     = nh->advertise<visualization_msgs::Marker>("desired_velocity", 1);    
     vis_acc_pub_     = nh->advertise<visualization_msgs::Marker>("desired_acceleration", 1);
-    std::cout << "position publisher: " << vis_pos_pub_.getTopic() << std::endl;
+    vis_yaw_pub_     = nh->advertise<visualization_msgs::Marker>("desired_yaw", 1);
 
     // Set the structures for the path publishers
     vis_pos_.id = vis_vel_.id = vis_acc_.id = 0;
-    vis_pos_.header.frame_id = vis_vel_.header.frame_id = vis_acc_.header.frame_id = "/map";
+    vis_pos_.header.frame_id = vis_vel_.header.frame_id = "/map";
+    vis_acc_.header.frame_id = vis_yaw_.header.frame_id = "/map";
     
     vis_pos_.ns = "pos";
-    vis_pos_.type   = visualization_msgs::Marker::SPHERE;
+    vis_pos_.type   = visualization_msgs::Marker::SPHERE_LIST;
     vis_pos_.action = visualization_msgs::Marker::ADD;
-    vis_pos_.color.a = 1.0; vis_pos_.color.r = 0.0; vis_pos_.color.g = 0.0; vis_pos_.color.b = 0.0;
+    vis_pos_.color = Color::Blue();
+    vis_pos_.pose.orientation.w = 1.0;
     vis_pos_.scale.x = 0.2; vis_pos_.scale.y = 0.2; vis_pos_.scale.z = 0.2;
 
     vis_vel_.ns = "vel";
     vis_vel_.type = visualization_msgs::Marker::ARROW;
     vis_vel_.action = visualization_msgs::Marker::ADD;
-    vis_vel_.color.a = 1.0; vis_vel_.color.r = 0.0; vis_vel_.color.g = 1.0; vis_vel_.color.b = 0.0;
+    vis_vel_.color = Color::Green();
     vis_vel_.scale.x = 0.1; vis_vel_.scale.y = 0.2; vis_vel_.scale.z = 0.2;
 
     vis_acc_.ns = "acc";
     vis_acc_.type = visualization_msgs::Marker::ARROW;
     vis_acc_.action = visualization_msgs::Marker::ADD;
-    vis_acc_.color.a = 1.0; vis_acc_.color.r = 1.0; vis_acc_.color.g = 1.0; vis_acc_.color.b = 0.0;
+    vis_acc_.color = Color::Yellow();
     vis_acc_.scale.x = 0.1; vis_acc_.scale.y = 0.2; vis_acc_.scale.z = 0.2;
+
+    vis_yaw_.ns = "yaw";
+    vis_yaw_.type = visualization_msgs::Marker::ARROW;
+    vis_yaw_.action = visualization_msgs::Marker::ADD;
+    vis_yaw_.color = Color::White();
+    vis_yaw_.scale.x = 0.1; vis_yaw_.scale.y = 0.2; vis_yaw_.scale.z = 0.2;
+
+    traj_vis_.header.frame_id = "map";
+    traj_vis_.ns = "trajectory_waypoints";
+    traj_vis_.id = 0;
+    traj_vis_.type = visualization_msgs::Marker::SPHERE_LIST;
+    traj_vis_.action = visualization_msgs::Marker::ADD;
+    traj_vis_.scale.x = vis_traj_width_;
+    traj_vis_.scale.y = vis_traj_width_;
+    traj_vis_.scale.z = vis_traj_width_;
+    traj_vis_.pose.orientation.w = 1.0;
+    traj_vis_.color = Color::Red();
 }
 
-void TimeOptimizerPublisher::VisualizePath(const Eigen::MatrixXd &polyCoeff, const Eigen::VectorXd &time) {
-    visualization_msgs::Marker traj_vis;
-
-    traj_vis.header.stamp       = ros::Time::now();
-    traj_vis.header.frame_id    = "map";
-
-    traj_vis.ns = "time_optimal/trajectory_waypoints";
-    traj_vis.id = 0;
-    traj_vis.type = visualization_msgs::Marker::SPHERE_LIST;
-    traj_vis.action = visualization_msgs::Marker::ADD;
-    traj_vis.scale.x = vis_traj_width_;
-    traj_vis.scale.y = vis_traj_width_;
-    traj_vis.scale.z = vis_traj_width_;
-    traj_vis.pose.orientation.x = 0.0;
-    traj_vis.pose.orientation.y = 0.0;
-    traj_vis.pose.orientation.z = 0.0;
-    traj_vis.pose.orientation.w = 1.0;
-
-    traj_vis.color.a = 1.0;
-    traj_vis.color.r = 1.0;
-    traj_vis.color.g = 0.0;
-    traj_vis.color.b = 0.0;
+void TrajPublisher::VisualizePath(const Eigen::MatrixXd &polyCoeff, const Eigen::VectorXd &time) {
+    traj_vis_.header.stamp = ros::Time::now();
 
     double traj_len = 0.0;
     int count = 0;
@@ -68,7 +68,7 @@ void TimeOptimizerPublisher::VisualizePath(const Eigen::MatrixXd &polyCoeff, con
     cur.setZero();
     pre.setZero();
 
-    traj_vis.points.clear();
+    traj_vis_.points.clear();
     Eigen::Vector3d pos;
     geometry_msgs::Point pt;
 
@@ -81,17 +81,31 @@ void TimeOptimizerPublisher::VisualizePath(const Eigen::MatrixXd &polyCoeff, con
           cur(0) = pt.x = pos(0);
           cur(1) = pt.y = pos(1);
           cur(2) = pt.z = pos(2);
-          traj_vis.points.push_back(pt);
+          traj_vis_.points.push_back(pt);
 
           if (count) traj_len += (pre - cur).norm();
           pre = cur;
         }
     }
 
-    wp_traj_vis_pub_.publish(traj_vis);
+    wp_traj_vis_pub_.publish(traj_vis_);
 }
 
-void TimeOptimizerPublisher::VisualizeWaypoints(const Eigen::MatrixXd &path) {
+void TrajPublisher::VisualizePath(const std::vector<Eigen::Vector3d> pos_hist) {
+    traj_vis_.header.stamp = ros::Time::now();
+    traj_vis_.points.clear();
+    geometry_msgs::Point pt;
+
+    for(int i = 0; i < pos_hist.size(); i++ ) {
+        pt.x = pos_hist[i](0);
+        pt.y = pos_hist[i](1);
+        pt.z = pos_hist[i](2);
+        traj_vis_.points.push_back(pt);
+    }
+    wp_traj_vis_pub_.publish(traj_vis_);
+}
+
+void TrajPublisher::VisualizeWaypoints(const Eigen::MatrixXd &path) {
     visualization_msgs::Marker points, line_list;
     int id = 0;
     points.header.frame_id    = line_list.header.frame_id    = "/map";
@@ -154,8 +168,8 @@ void TimeOptimizerPublisher::VisualizeWaypoints(const Eigen::MatrixXd &path) {
 }
 
 // Publish trajectory (real-time visualization)
-void TimeOptimizerPublisher::PubPVA_Markers(const geometry_msgs::Point &pos, const geometry_msgs::Vector3 &vel,
-                                            const geometry_msgs::Vector3 &acc) {   
+void TrajPublisher::PubPVA_Markers(const geometry_msgs::Point &pos, const geometry_msgs::Vector3 &vel,
+                                   const geometry_msgs::Vector3 &acc) {   
 
     vis_pos_.header.stamp = ros::Time::now();
     vis_vel_.header.stamp = ros::Time::now();
@@ -184,9 +198,22 @@ void TimeOptimizerPublisher::PubPVA_Markers(const geometry_msgs::Point &pos, con
     vis_acc_pub_.publish(vis_acc_);
 }
 
-void TimeOptimizerPublisher::PubRealTimeTraj(const std::vector<p4_ros::PVA> &pva_vec,
-                                             const double &sampling_freq,
-                                             const double &final_time) {
+void TrajPublisher::PubYaw_Marker(const geometry_msgs::Point &pos, 
+                                  const double &yaw) {
+    vis_yaw_.header.stamp = ros::Time::now();
+    vis_yaw_.points.clear();
+    vis_yaw_.points.push_back(pos);
+    geometry_msgs::Point pt;
+    pt.x = pos.x + yaw_vec_length_*cos(yaw);
+    pt.y = pos.y + yaw_vec_length_*sin(yaw);
+    pt.z = pos.z;
+    vis_yaw_.points.push_back(pt);
+    vis_yaw_pub_.publish(vis_yaw_);
+}
+
+void TrajPublisher::PubRealTimeTraj(const std::vector<p4_ros::PVA> &pva_vec,
+                                    const double &sampling_freq,
+                                    const double &final_time) {
     ROS_INFO("[p4_services] Publishing trajectory...");
     ros::Rate rate(sampling_freq);
     for (uint i = 0; i < pva_vec.size(); i++) {
@@ -198,7 +225,23 @@ void TimeOptimizerPublisher::PubRealTimeTraj(const std::vector<p4_ros::PVA> &pva
     printf("\n\r");
 }
 
-void TimeOptimizerPublisher::plot_results_gnuplot(const std::vector<p4_ros::PVA> &pva_vec) {
+void TrajPublisher::PubRealTimeTraj(const std::vector<p4_ros::PVA_4d> &pva_vec,
+                                    const double &sampling_freq,
+                                    const double &final_time) {
+    ROS_INFO("[p4_services] Publishing trajectory...");
+    ros::Rate rate(sampling_freq);
+    for (uint i = 0; i < pva_vec.size(); i++) {
+        p4_ros::PVA_4d cur_pva = pva_vec[i];
+        // std::cout << cur_pva.pos.x << " " << cur_pva.pos.y << " " << cur_pva.pos.z << std::endl;
+        printf("\rPublishing trajectory for time %4.2f/%4.2f sec", cur_pva.time, final_time);
+        this->PubPVA_Markers(cur_pva.pos, cur_pva.vel, cur_pva.acc);
+        this->PubYaw_Marker(cur_pva.pos, cur_pva.yaw);
+        rate.sleep();
+    }
+    printf("\n\r");
+}
+
+void TrajPublisher::plot_results_gnuplot(const std::vector<p4_ros::PVA> &pva_vec) {
     {
         std::vector<double> t_hist, x_hist, y_hist, z_hist;
         for (uint i = 0; i < pva_vec.size(); i++) {
@@ -263,7 +306,7 @@ void TimeOptimizerPublisher::plot_results_gnuplot(const std::vector<p4_ros::PVA>
     }
 }
 
-Eigen::Vector3d TimeOptimizerPublisher::getPosPoly(const Eigen::MatrixXd &polyCoeff, 
+Eigen::Vector3d TrajPublisher::getPosPoly(const Eigen::MatrixXd &polyCoeff, 
                            const int &k, const double &t, const uint &n_coeff) {
     Eigen::Vector3d ret;
 

@@ -8,6 +8,8 @@
 
 #include "p4_ros/minAccXYWpPVA.h"
 #include "p4_ros/min_time.h"
+#include "p4_ros/trapezoidal_p2p.h"
+
 #include "p4_ros/p4_helper.h"
 
 // Ros message types
@@ -26,10 +28,13 @@ class ServicesClass {
 	bool minTimeService(p4_ros::min_time::Request  &req,
 	                    p4_ros::min_time::Response &res);
 
+	bool trapezoidal_service(p4_ros::trapezoidal_p2p::Request  &req,
+	                         p4_ros::trapezoidal_p2p::Response &res);
+
  private:
  	ros::NodeHandle *nh_;
-	ros::ServiceServer min_acc_srv, min_time_srv;
-	visualization::TimeOptimizerPublisher time_optimizer_pub_obj;
+	ros::ServiceServer min_acc_srv, min_time_srv, trapezoidal_srv;
+	visualization::TrajPublisher traj_pub_obj;
 };
 
 }  // namespace p4_ros

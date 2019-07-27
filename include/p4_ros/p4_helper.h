@@ -8,6 +8,7 @@
 #include "geometry_msgs/Vector3.h"
 #include "p4_ros/minAccXYWpPVA.h"
 #include "p4_ros/min_time.h"
+#include "p4_ros/trapezoidal_p2p.h"
 #include "p4_ros/trapezoidal.h"
 #include "p4_ros/geometry_functions.h"
 
@@ -49,7 +50,15 @@ geometry_msgs::Point eigen_to_ros_point(const Eigen::Vector3d &eig_vec);
 
 geometry_msgs::Point ros_point(const double &x, const double &y, const double &z);
 
+geometry_msgs::Vector3 eigen_to_ros_vector(const Eigen::Vector3d &eig_vec);
+
 geometry_msgs::Vector3 ros_vector3(const double &x, const double &y, const double &z);
+
+p4_ros::PVA_4d constuct_PVA (const Eigen::Vector3d &pos,
+	                         const Eigen::Vector3d &vel,
+	                         const Eigen::Vector3d &acc,
+	                         const double &yaw, const double &yaw_vel,
+	                         const double &yaw_acc, const double &time);
 
 std::vector<float> diff_coeff(const std::vector<float> &coeff_in);
 

@@ -1,0 +1,25 @@
+# This service is used to call trapezoidal point to point trajectories
+# starting from rest and finishing at rest
+# corridor_width imposes corridor contraints between every two waypoints
+# max_vel imposes maximum velocity
+# max_acc imposes maximum acceleration
+# max_jerk imposes maximum jerk
+# sampling_freq has the sampling frequency of the output
+# set visualize_output to true to see a "real-time" visualization of the trajectory in Rviz (debug purposes)
+# pva_vec returns timestamped position, velocity and acceleration throughout the computed trajectory
+# final_time returns the time of flight. Returns a negative number if the solver could not compute a trajectory successfully. 
+geometry_msgs/Point init_pos
+geometry_msgs/Point final_pos
+float32 max_vel
+float32 max_acc
+
+float32 init_yaw
+float32 final_yaw
+float32 max_yaw_vel
+float32 max_yaw_acc
+
+float32 sampling_freq
+bool visualize_output
+---
+p4_ros/PVA_4d[] pva_vec
+float32 final_time

@@ -20,11 +20,13 @@ add_message_files(DIRECTORY msg FILES
    PVA_request.msg
    PolyPVA.msg
    PVA.msg
+   PVA_4d.msg
 )
 
 add_service_files( FILES
   minAccXYWpPVA.srv
   min_time.srv
+  trapezoidal_p2p.srv
 )
 
 generate_messages( DEPENDENCIES
@@ -40,7 +42,7 @@ find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS iostreams REQUIRED)
 add_subdirectory(P4)
 
 catkin_package(
-  DEPENDS Eigen
+  DEPENDS Eigen message_runtime
 )
 
 ###########
@@ -83,13 +85,18 @@ add_dependencies(p4_services p4_ros_generate_messages_cpp)
 target_link_libraries(p4_services ${catkin_LIBRARIES} ${Boost_LIBRARIES} 
                       osqp::osqp mosek64 libldl.a libecos.a)
 
-add_executable(p4_client src/p4_client_example.cpp
-                           src/p4_helper.cpp
-                           src/trapezoidal.cpp
-                           src/geometry_functions.cpp
-                           TimeOptimizer/time_optimizer/src/time_optimizer.cpp
-                           P4/src/polynomial_solver.cc
-                           P4/src/polynomial_sampler.cc)
-add_dependencies(p4_client ${catkin_EXPORTED_TARGETS})
-add_dependencies(p4_client p4_ros_generate_messages_cpp)
-target_link_libraries(p4_client ${catkin_LIBRARIES} ${Boost_LIBRARIES} osqp::osqp mosek64)
+add_executable(p4_min_time_client src/p4_min_time_client_example.cpp
+                                  src/p4_helper.cpp
+                                  src/trapezoidal.cpp
+                                  src/geometry_functions.cpp
+                                  TimeOptimizer/time_optimizer/src/time_optimizer.cpp
+                                  P4/src/polynomial_solver.cc
+                                  P4/src/polynomial_sampler.cc)
+add_dependencies(p4_min_time_client ${catkin_EXPORTED_TARGETS})
+add_dependencies(p4_min_time_client p4_ros_generate_messages_cpp)
+target_link_libraries(p4_min_time_client ${catkin_LIBRARIES} ${Boost_LIBRARIES} osqp::osqp mosek64)
+
+add_executable(p4_trapezoidal_client src/p4_trapezoidal_client_example.cpp)
+add_dependencies(p4_trapezoidal_client ${catkin_EXPORTED_TARGETS})
+add_dependencies(p4_trapezoidal_client p4_ros_generate_messages_cpp)
+target_link_libraries(p4_trapezoidal_client ${catkin_LIBRARIES})
