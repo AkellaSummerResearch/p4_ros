@@ -270,7 +270,7 @@ void TimeOptimizerClass::GetPVAatTime(
         velocity_s     = getVelPoly(polyCoeff_, idx, (s_k + s_k_1 ) / 2.0);
         acceleration_s = getAccPoly(polyCoeff_, idx, (s_k + s_k_1 ) / 2.0);
         acceleration = velocity_s * a_k + acceleration_s * (b_k + b_k_1) / 2.0;
-    } else if(idx >= num_segments_) {
+    } else if(idx > num_segments_) {
         velocity = Eigen::Vector3d(0.0, 0.0, 0.0);
         acceleration = Eigen::Vector3d(0.0, 0.0, 0.0);
     } else  {

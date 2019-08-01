@@ -13,7 +13,7 @@ Panels:
         - /Setpoint1
         - /DronePose1
       Splitter Ratio: 0.576470613
-    Tree Height: 933
+    Tree Height: 437
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -279,5 +279,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 928
-  X: 65
+  X: 992
   Y: 24

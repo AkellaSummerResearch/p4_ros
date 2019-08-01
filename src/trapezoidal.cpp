@@ -237,6 +237,8 @@ void planner_1d::plot_traj (const std::vector<double> &time_hist,
 planner_3d::planner_3d (const Eigen::Vector3d &init_pos,
  		                const Eigen::Vector3d &final_pos,
  		                const double &max_vel, const double &max_acc) {
+	init_pos_ = init_pos;
+	final_pos_ = final_pos;
 	const double final_displacement_ = (final_pos - init_pos).norm();
 	direction_ = (final_pos - init_pos).normalized();
 
