@@ -258,7 +258,7 @@ void TimeOptimizerClass::GetPVAatTime(
         acceleration1 << 0.0, 0.0, 0.0;
         
         acceleration   = acceleration1 + (acceleration2 - acceleration1) * t / time_acc(0, 0); 
-    } else if( grid_idx == grid_num && idx == (num_segments_ - 1) ) {
+    } else if( grid_idx == grid_num && idx == (num_segments_) ) {
         // # special case 2: the very last grid of all segments of the trajectory, do interpolation in one grid
         s_k   = time_allocator_->s(idx, grid_num - 1);
         s_k_1 = time_allocator_->s(idx, grid_num);
