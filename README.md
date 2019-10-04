@@ -77,7 +77,7 @@ roslaunch p4_ros launch_services.launch
 In the second terminal, run the client example (see src/p4_client_example.cpp if you want to edit the desired trajectory):
 
 ```
-rosrun p4_ros p4_client
+rosrun p4_ros p4_min_time_client
 ```
 
 ## ECOS and SOCP Documentation
