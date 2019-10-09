@@ -32,6 +32,7 @@ If the installation instructions from OSQP's website are not working properly, f
 ```
 git clone https://github.com/oxfordcontrol/osqp
 cd osqp
+git checkout release-0.5.0
 git submodule update --init --recursive
 mkdir build
 cd build
