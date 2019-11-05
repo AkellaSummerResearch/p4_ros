@@ -39,7 +39,7 @@ find_package(osqp REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS iostreams REQUIRED)
 
-add_subdirectory(P4)
+#add_subdirectory(P4)
 
 catkin_package(
   DEPENDS Eigen message_runtime
